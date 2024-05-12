@@ -1,0 +1,196 @@
+﻿@model IEnumerable<DecorShop.Models.EF.News>
+
+@{
+    ViewBag.Title = "Danh sách tin tức";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+
+    <div class="content-wrapper">
+        <!-- Content -->
+
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <h4 class="fw-bold py-3 mb-4"> <a class="text-muted fw-light" href="#"> Home /</a> @ViewBag.Title</h4>
+            <!-- Basic Bootstrap Table -->
+            <div class="card">
+
+
+
+                <div class="table-responsive text-nowrap">
+                    <div class="card-header">
+                        <h5 class="card-title">@ViewBag.Title</h5>
+
+                        <div class="card-tools">
+
+                            <a href="/admin/news/add" class="btn btn-primary">Thêm mới</a>
+                            <a href="#" class="btn btn-danger" id="BtnDeleteAll">Xóa</a>
+
+                            @using (Html.BeginForm("index", "News", FormMethod.Get, new { }))
+                            {
+                                <div class="input-group input-group-sm">
+                                    @Html.TextBox("Searchtext", null, new { @class = "form-control" })
+
+                                    <span class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-primary">Tìm kiếm</button>
+                                    </span>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+
+                                <tr>
+                                    <th></th>
+                                    <th>STT</th>
+                                    <th>Hình ảnh</th>
+                                    <th>Tiêu đề</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Hiển thị</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0">
+                                @if (Model != null && Model.Any())
+                                {
+                                    var i = ((ViewBag.Page - 1) * ViewBag.PageSize) + 1;
+                                    foreach (var item in Model)
+                                    {
+                                        <tr id="trow_@item.Id">
+                                            <td><input type="checkbox" class="cbkItem" value="@item.Id" /></td>
+
+                                            <td>@i</td>
+
+                                            <td><img src="@item.Image" width="50" /></td>
+
+                                            <td>@item.Title</td>
+
+                                            <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
+
+
+                                            <td class="text-center">
+                                                <a href='#' data-id="@item.Id" class="btnActive">
+                                                    @if (item.IsActive)
+                                                    {
+                                                        <input class="form-check-input" type="checkbox" value="" id="defaultCheck3" checked />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input class="form-check-input" type="checkbox" value="" id="defaultCheck3" />
+                                                    }
+                                                </a>
+                                            </td>
+
+
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <a href="/admin/news/edit/@item.Id" class="dropdown-item"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                                                        <a href="#" data-id="@item.Id" class="dropdown-item  btnDelete"><i class="bx bx-trash me-1"></i> Delete</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4">Không có bản ghi nào!!!</td>
+                                    </tr>
+                                }
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+        </div>
+    </div>
+    </div>
+
+    @section scripts{
+        <script>
+            $(document).ready(function () {
+                $('body').on('click', '#BtnDeleteAll', function (e) {
+                    e.preventDefault();
+                    var str = "";
+                    var checkbox = $(this).parents('.card').find('tr td input:checkbox');
+                    var i = 0;
+                    checkbox.each(function () {
+                        if (this.checked) {
+                            var _id = $(this).val();
+                            if (i === 0) {
+                                str += _id;
+                            } else {
+                                str += "," + _id;
+                            }
+                            i++;
+                        } else {
+                            checkbox.attr('selected', '');
+                        }
+                    });
+                    if (str.length > 0) {
+                        var conf = confirm('Bạn có muốn xóa các bản ghi này hay không?');
+                        if (conf === true) {
+                            $.ajax({
+                                url: '/admin/news/deleteAll',
+                                type: 'POST',
+                                data: { ids: str },
+                                success: function (rs) {
+                                    if (rs.success) {
+                                        location.reload();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+                
+                $('body').on('click', '.btnDelete', function () {
+                    var id = $(this).data("id");
+                    var conf = confirm('Bạn có muốn xóa bản ghi này không?');
+                    if (conf === true) {
+                        $.ajax({
+                            url: '/admin/news/delete',
+                            type: 'POST',
+                            data: { id: id },
+                            success: function (rs) {
+                                if (rs.success) {
+                                    $('#trow_' + id).remove();
+                                }
+                            }
+                        });
+                    }
+                });
+                $('body').on('click', '.btnActive', function (e) {
+                    e.preventDefault();
+                    var btn = $(this);
+                    var id = btn.data("id");
+                    var isActive = btn.find('.form-check-input').prop('checked');
+
+                    $.ajax({
+                        url: '/admin/news/IsActive',
+                        type: 'POST',
+                        data: { id: id, isActive: isActive },
+                        success: function (rs) {
+                            if (rs.success) {
+                                if (isActive) {
+                                    btn.html("<input class='form-check-input' type='checkbox' value='' id='defaultCheck3' checked />");
+                                } else {
+                                    btn.html("<input class='form-check-input' type='checkbox' value='' id='defaultCheck3' />");
+                                }
+                            }
+                        }
+                    });
+
+                });
+            });
+        </script>
+    }

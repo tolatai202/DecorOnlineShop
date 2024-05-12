@@ -1,0 +1,114 @@
+﻿@model DecorShop.Models.EF.News
+@{
+    ViewBag.Title = "Thêm mới tin t";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+
+<h4 class="fw-bold py-3 mb-4">
+    <a class="text-muted fw-light" href="#"> Home /</a>
+    <a class="text-muted fw-light" href="/admin/News"> Quản lý tin tức /</a> @ViewBag.Title
+</h4>
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row">
+            <div class="col-xl">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Thêm mới tin tức</h5>
+                        <small class="text-muted float-end">Default label</small>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <script>
+                               alert("@ViewBag.ErrorMessage");
+                        </script>
+                    }
+                <div class="card-body">
+                    @using (Html.BeginForm("Add", "News", FormMethod.Post, new { }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true)
+
+
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Tiêu đề</label>
+                            @Html.TextBoxFor(x => x.Title, new { @class = "form-control", @id = "basic-default-fullname", @placeholder = "Tiêu đề" })
+                            @Html.ValidationMessageFor(x => x.Title, null, new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputFile">Ảnh đại diện</label>
+                            <div class="input-group">
+                              @Html.TextBoxFor(x => x.Image, new { @id = "txtImage", @class = "form-control" })
+
+                                    <input type="button" value="Tải ảnh" onclick="BrowseServer('txtImage');" />
+                                
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-icon-default-message">Mô tả</label>
+
+                            @Html.TextAreaFor(x => x.Description, new { @class = "form-control", id = "basic-icon-default-message" })
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="basic-icon-default-message">Chi tiết</label>
+                            @Html.TextAreaFor(x => x.Detail, new { @class = "form-control", @id = "txtDetail" })
+                        </div>
+                        <div class="mb-3">
+
+                            @Html.CheckBoxFor(x => x.IsActive, new { @class = "form-check-input", @checked = "@checked" })
+                            <label for="form-check-label"> Hiển thị</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Seo Titles</label>
+
+                            @Html.TextAreaFor(x => x.SeoTitle, new { @class = "form-control" })
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Seo Descriptions</label>
+
+                            @Html.TextAreaFor(x => x.SeoDescription, new { @class = "form-control" })
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Seo keywords</label>
+
+                            @Html.TextAreaFor(x => x.SeoKeywords, new { @class = "form-control" })
+                        </div>
+                        <div class="form-group">
+                            <a href="/admin/news" class="btn btn-secondary">Quay lại</a>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+
+
+
+                    }
+                </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section  scripts{
+    <script>
+        $(document).ready(function () {
+            $(document).ready(function () {
+                CKEDITOR.replace('txtDetail', {
+                    customConfig: '/content/ckeditor/config.js',
+                    extraAllowedContent: 'span',
+                });
+            });
+        });
+        function BrowseServer(field) {
+            var finder = new CKFinder();
+            finder.selectActionFunction = function (fileUrl) {
+                document.getElementById(field).value = fileUrl;
+            };
+            finder.popup();
+        }
+
+    </script>
+}
